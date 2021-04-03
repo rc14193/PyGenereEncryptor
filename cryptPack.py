@@ -1,6 +1,8 @@
 import sys
 import secrets
 import logging
+import time
+import threading
 from cryptUI import *
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -13,11 +15,23 @@ ch.setFormatter(FORMAT)
 log.addHandler(ch)
 log.disabled = True
 
-class Vigenre_Method:
-    def init(self):
+class Vigenere_Method:
+    def __init__(self, ui):
         self.key = None
         self.input_text = None
         self.output_text = None
+        self.ui = ui
+
+    def display_message(self, msg):
+        log.debug(f"display message of {msg}")
+        def message_thread(msg):
+            self.ui.info_label.setText(msg)
+            self.ui.info_label.setVisible(True)
+            time.sleep(4)
+            self.ui.info_label.setText('')
+            self.ui.info_label.setVisible(False)
+        thread = threading.Thread(target=message_thread, args=(msg,))
+        thread.start()
 
     def apply_method(self, plain_text, method, key):
         key_index = 0
@@ -36,16 +50,19 @@ class Vigenre_Method:
                 output_char += 32
             if output_char < 32 or output_char > 126:
                 log.error(f"Error: output was a control character {output_char}")
+                self.display_message("Error: algorithm calculated non-visible control character, please report logic error.")
             output += chr(output_char)
             log.debug(f"add plain char {plain_char} and key char {key_char} and got {output_char}")
             key_index = (key_index + 1) % len(key) 
+        self.display_message("Done")
         return (output, key)
 
 class Controller:
     def __init__(self,ui):
         self.ui = ui
         self.init_UI()
-        self.Vigenere = Vigenre_Method()
+        self.ui.info_label.setVisible(False)
+        self.Vigenere = Vigenere_Method(self.ui)
 
     def init_UI(self):
         self.ui.key_len_spinBox.setRange(0,20000)
