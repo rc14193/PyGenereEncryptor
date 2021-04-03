@@ -28,11 +28,12 @@ class Vigenre_Method:
             key_char = ord(key[key_index])
             
             if method:
-                output_char = (plain_char + key_char) % 127
-                output_char += 33
+                output_char = ((plain_char-32) + (key_char-32)) % 95
+                output_char += 32
             else:
-                output_char = ((plain_char-33) - key_char) % 127
-            if output_char < 33 or output_char > 127:
+                output_char = ((plain_char-32)-(key_char-32)) % 95
+                output_char += 32
+            if output_char < 32 or output_char > 127:
                 log.error(f"Error: output was a control character {output_char}")
             output += chr(output_char)
             log.debug(f"add plain char {plain_char} and key char {key_char} and got {output_char}")
